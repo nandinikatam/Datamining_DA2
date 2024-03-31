@@ -1,0 +1,26 @@
+data = readtable("wine-clustering.csv");
+attributes = data{:, 6:11}; 
+normalized_data = normalize(attributes);
+k = 3; 
+numSamples = 10; 
+minCost = inf;
+bestMedoids = zeros(k, size(normalized_data, 2));
+for i = 1:numSamples
+    % Sample a subset of data
+    sampleIndices = randperm(size(normalized_data, 1), k);
+    sampleData = normalized_data(sampleIndices, :);
+    [idx, medoids] = kmedoids(sampleData, k);
+    totalCost = sum(pdist2(normalized_data, sampleData(idx, :)).^2, 2);
+    if sum(totalCost) < minCost
+        minCost = sum(totalCost);
+        bestMedoids = sampleData(idx, :);
+    end
+end
+
+distances_to_medoids = pdist2(normalized_data, bestMedoids);
+[~, cluster_assignment] = min(distances_to_medoids, [], 2);
+scatter3(attributes(:,1), attributes(:,2), attributes(:,3), 10, cluster_assignment, 'filled');
+xlabel('Color_Intensity');
+ylabel('Flavanoids');
+zlabel('Proline');
+title('clara clusturing');
